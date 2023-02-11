@@ -1,6 +1,6 @@
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 public class Commands {
@@ -12,10 +12,11 @@ public class Commands {
         String secondWord = String.join(" ", allWordsAfterFirst);
         Server server = new Server();
         Map<Socket, String> map = server.getUsers();
-        List<Socket> listSockets = server.getUserSocket();
-        for (var v : listSockets) {
-            if (map.get(v).equals(secondWord)) {
+        ArrayList<String> arrayList = new ArrayList<>(map.values());
+        for (String s : arrayList) {
+            if (secondWord.equals(s)) {
                 System.out.println("Имя не может содержать пробелы или быть похожим на другого пользователя");
+                secondWord = " ";
                 break;
             }
         }
@@ -26,6 +27,8 @@ public class Commands {
                 case "/list":
                     return "list";
             }
+        } else if (firstWord.contains("/whisper")) {
+            return secondWord;
         } else {
             System.out.println("Имя не может содержать пробелы или быть похожим на другого пользователя");
         }

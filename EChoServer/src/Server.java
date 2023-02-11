@@ -7,10 +7,6 @@ public class Server {
     private final List<Socket> userSocket = new ArrayList<>();
     private final Map<Socket, String> users = new HashMap<>();
 
-    public List<Socket> getUserSocket() {
-        return userSocket;
-    }
-
     public Map<Socket, String> getUsers() {
         return users;
     }
@@ -61,7 +57,7 @@ public class Server {
                         }
                         sendResponse(listOfNames, writer);
                     } else {
-                        sendResponse("Имя не может содержать пробелы", writer);
+                        sendResponse("Такой команды нету или присутствуют пробелы", writer);
                     }
                 }
                 if (!firstLetter.equalsIgnoreCase("/")) {
