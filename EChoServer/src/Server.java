@@ -18,9 +18,9 @@ public class Server {
     }
 
     public void handle(Socket socket) {
-        System.out.printf("Подключен клиент: %s%n", socket);
-        userSocket.add(socket);
         String name = String.valueOf(randomNameGenerator());
+        System.out.printf("Подключен клиент: %s%n", name);
+        userSocket.add(socket);
         try (socket;
              Scanner reader = getReader(socket);
              PrintWriter writer = getWriter(socket)
@@ -32,8 +32,14 @@ public class Server {
                 if (isEmptyMsg(message) || isQuitMsg(message)) {
                     break;
                 }
-                System.out.println(message);
-                sendResponse(message.toUpperCase(), writer);
+                String userMassage = name + ": " + message;
+                System.out.println(name + ": " + message);
+                for (Socket num : userSocket) {
+                    if (num != socket) {
+                        PrintWriter writer1 = getWriter(num);
+                        sendResponse(userMassage, writer1);
+                    }
+                }
             }
         } catch (NoSuchElementException e) {
             System.out.printf("Client dropped %s the connection!%n", name);
