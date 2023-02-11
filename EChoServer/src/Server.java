@@ -30,6 +30,13 @@ public class Server {
             while (true) {
                 String message = reader.nextLine().strip();
                 if (isEmptyMsg(message) || isQuitMsg(message)) {
+                    for (Socket num : userSocket) {
+                        if (num != socket) {
+                            String userMassage = "Пользователь " + name + " вышел";
+                            PrintWriter writer1 = getWriter(num);
+                            sendResponse(userMassage, writer1);
+                        }
+                    }
                     break;
                 }
                 String userMassage = name + ": " + message;
