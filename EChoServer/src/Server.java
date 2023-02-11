@@ -1,18 +1,31 @@
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.*;
 
 public class Server {
+    private final List<Socket> userSocket = new ArrayList<>();
+
+    private StringBuilder randomNameGenerator() {
+        String alphabet = "abcdefghijklmnopqrstuvwxyz";
+        Random random = new Random();
+        StringBuilder name = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            int index = random.nextInt(alphabet.length());
+            name.append(alphabet.charAt(index));
+        }
+        return name;
+    }
+
     public void handle(Socket socket) {
         System.out.printf("Подключен клиент: %s%n", socket);
-
+        userSocket.add(socket);
+        String name = String.valueOf(randomNameGenerator());
         try (socket;
              Scanner reader = getReader(socket);
              PrintWriter writer = getWriter(socket)
         ) {
-            sendRespone("Привет " + socket, writer);
+            sendResponse("Привет " + name, writer);
 
             while (true) {
                 String message = reader.nextLine().strip();
@@ -20,17 +33,17 @@ public class Server {
                     break;
                 }
                 System.out.println(message);
-                sendRespone(message.toUpperCase(), writer);
+                sendResponse(message.toUpperCase(), writer);
             }
         } catch (NoSuchElementException e) {
-            System.out.printf("Client dropped the connection!%n");
+            System.out.printf("Client dropped %s the connection!%n", name);
         } catch (IOException e) {
-            System.out.printf("Клиент отключился: %s%n", socket);
+            System.out.printf("Клиент отключился: %s%n", name);
             e.printStackTrace();
         }
     }
 
-    private void sendRespone(String response, Writer writer) throws IOException{
+    private void sendResponse(String response, Writer writer) throws IOException {
         writer.write(response);
         writer.write(System.lineSeparator());
         writer.flush();
