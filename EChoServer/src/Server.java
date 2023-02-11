@@ -5,6 +5,15 @@ import java.util.*;
 
 public class Server {
     private final List<Socket> userSocket = new ArrayList<>();
+    private final Map<Socket, String> users = new HashMap<>();
+
+    public List<Socket> getUserSocket() {
+        return userSocket;
+    }
+
+    public Map<Socket, String> getUsers() {
+        return users;
+    }
 
     private StringBuilder randomNameGenerator() {
         String alphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -21,30 +30,59 @@ public class Server {
         String name = String.valueOf(randomNameGenerator());
         System.out.printf("Подключен клиент: %s%n", name);
         userSocket.add(socket);
+        users.put(socket, name);
         try (socket;
              Scanner reader = getReader(socket);
              PrintWriter writer = getWriter(socket)
         ) {
             sendResponse("Привет " + name, writer);
-
+            String newNAme = name;
             while (true) {
                 String message = reader.nextLine().strip();
-                if (isEmptyMsg(message) || isQuitMsg(message)) {
+                String firstLetter = String.valueOf(message.charAt(0));
+                if (firstLetter.equalsIgnoreCase("/")) {
+                    newNAme = Commands.command(message);
+                    if (!newNAme.equals("") & !newNAme.equals("list")) {
+                        String userMassage = String.format("Пользователь %s поменял ник на %s", name, newNAme);
+                        users.put(socket, newNAme);
+                        System.out.println(name + ": " + message);
+                        for (Socket num : userSocket) {
+                            if (num != socket) {
+                                PrintWriter writer1 = getWriter(num);
+                                sendResponse(userMassage, writer1);
+                            }
+                        }
+                    } else if (newNAme.equals("list")) {
+                        ArrayList<String> list = new ArrayList<>();
+                        String listOfNames = null;
+                        for (var v : users.values()) {
+                            list.add(v);
+                            listOfNames = String.valueOf(list);
+                        }
+                        sendResponse(listOfNames, writer);
+                    } else {
+                        sendResponse("Имя не может содержать пробелы", writer);
+                    }
+                }
+                if (!firstLetter.equalsIgnoreCase("/")) {
+                    name = newNAme;
+                    if (isEmptyMsg(message) || isQuitMsg(message)) {
+                        for (Socket num : userSocket) {
+                            if (num != socket) {
+                                String userMassage = "Пользователь " + name + " вышел";
+                                PrintWriter writer1 = getWriter(num);
+                                sendResponse(userMassage, writer1);
+                            }
+                        }
+                        break;
+                    }
+                    String userMassage = name + ": " + message;
+                    System.out.println(name + ": " + message);
                     for (Socket num : userSocket) {
                         if (num != socket) {
-                            String userMassage = "Пользователь " + name + " вышел";
                             PrintWriter writer1 = getWriter(num);
                             sendResponse(userMassage, writer1);
                         }
-                    }
-                    break;
-                }
-                String userMassage = name + ": " + message;
-                System.out.println(name + ": " + message);
-                for (Socket num : userSocket) {
-                    if (num != socket) {
-                        PrintWriter writer1 = getWriter(num);
-                        sendResponse(userMassage, writer1);
                     }
                 }
             }
