@@ -5,9 +5,9 @@ import java.util.*;
 
 public class Server {
     private final List<Socket> userSocket = new ArrayList<>();
-    private final Map<Socket, String> users = new HashMap<>();
+    private static final Map<Socket, String> users = new HashMap<>();
 
-    public Map<Socket, String> getUsers() {
+    public static Map<Socket, String> getUsers() {
         return users;
     }
 
@@ -32,15 +32,17 @@ public class Server {
              PrintWriter writer = getWriter(socket)
         ) {
             sendResponse("Привет " + name, writer);
-            String newNAme = name;
+            String newName;
+            String usuallyName = name;
             while (true) {
                 String message = reader.nextLine().strip();
                 String firstLetter = String.valueOf(message.charAt(0));
                 if (firstLetter.equalsIgnoreCase("/")) {
-                    newNAme = Commands.command(message);
-                    if (!newNAme.equals("") & !newNAme.equals("list")) {
-                        String userMassage = String.format("Пользователь %s поменял ник на %s", name, newNAme);
-                        users.put(socket, newNAme);
+                    newName = Commands.command(message);
+                    if (!newName.equals("") & !newName.equals("list")) {
+                        String userMassage = String.format("Пользователь %s поменял ник на %s", name, newName);
+                        usuallyName = newName;
+                        users.put(socket, newName);
                         System.out.println(name + ": " + message);
                         for (Socket num : userSocket) {
                             if (num != socket) {
@@ -48,7 +50,7 @@ public class Server {
                                 sendResponse(userMassage, writer1);
                             }
                         }
-                    } else if (newNAme.equals("list")) {
+                    } else if (newName.equals("list")) {
                         ArrayList<String> list = new ArrayList<>();
                         String listOfNames = null;
                         for (var v : users.values()) {
@@ -61,7 +63,7 @@ public class Server {
                     }
                 }
                 if (!firstLetter.equalsIgnoreCase("/")) {
-                    name = newNAme;
+                    name = usuallyName;
                     if (isEmptyMsg(message) || isQuitMsg(message)) {
                         for (Socket num : userSocket) {
                             if (num != socket) {

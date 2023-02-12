@@ -1,5 +1,4 @@
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -10,10 +9,8 @@ public class Commands {
         String firstWord = words[0];
         String[] allWordsAfterFirst = Arrays.copyOfRange(words, 1, words.length);
         String secondWord = String.join(" ", allWordsAfterFirst);
-        Server server = new Server();
-        Map<Socket, String> map = server.getUsers();
-        ArrayList<String> arrayList = new ArrayList<>(map.values());
-        for (String s : arrayList) {
+        Map<Socket, String> map = Server.getUsers();
+        for (String s : map.values()) {
             if (secondWord.equals(s)) {
                 System.out.println("Имя не может содержать пробелы или быть похожим на другого пользователя");
                 secondWord = " ";
